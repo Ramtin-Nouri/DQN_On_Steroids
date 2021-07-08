@@ -1,0 +1,3 @@
+[submodule "TF2_Keras_Template"]
+	path = TF2_Keras_Template
+	url = https://github.com/Ramtin-Nouri/TF2_Keras_Template
