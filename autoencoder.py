@@ -16,7 +16,7 @@ class NeuralNetwork(template.nnBase.NNBase):
         """
         
         observations_input = Input(shape=inputShape)
-        action_input = Input(shape=(None,None,1,))
+        action_input = Input(shape=(None,None,1))
 
         conv1 = Conv2D(32, (3, 3), activation='relu',padding='same')(observations_input)
         pool1 = MaxPooling2D((2, 2))(conv1)
@@ -40,5 +40,5 @@ class NeuralNetwork(template.nnBase.NNBase):
         conv9 = Conv2D(3, (3, 3), activation='relu',padding='same')(up4)
               
         model = Model([observations_input,action_input],conv9)
-        model.compile(optimizer='adam', loss='msle')
+        model.compile(optimizer='adam', loss='mse')
         return model

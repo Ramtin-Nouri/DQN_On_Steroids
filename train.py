@@ -5,14 +5,15 @@ batchsize = 16
 
 
 net = autoencoder.NeuralNetwork()
-model,epoch = net.getModel((None,None,3),(None,None,3)) #(None,None) basically means we don't care. Because it is a CNN the output shape will be determined by the architecture
+model,epoch = net.getModel((160,208,6),(160,208,3)) #original size is 210 but that's not divisible by 8
 
-dataGen = datamanager.DataGenerator("Breakout-v0",batchsize,debugMode=True)
+dataGen = datamanager.DataGenerator("Breakout-v0",batchsize,debugMode=False)
 
 #Get Loggers
 logger = template.Logger("savedata/",model)
 logger.setTestImages("data/test")
-callbacks = logger.getCallbacks(period=20)
+callbacks = logger.getCallbacks(period=20,predict=False) #predict set to False until its working 
+#TODO:implement class inheriting Logger and overwriting getImgPredictions()
 
 model.fit(dataGen.getGenerator(),
                 steps_per_epoch=1000,
