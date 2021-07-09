@@ -1,5 +1,6 @@
 from tensorflow.keras.layers import Conv2D, Dropout, MaxPooling2D, UpSampling2D, concatenate, Input, Dense
 from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
 
 import TF2_Keras_Template as template
 
@@ -9,24 +10,26 @@ class NeuralNetwork(template.nnBase.NNBase):
         #Only sets the name of this class
         self.networkName = "Autoencoder"
             
-    def makeModel(self,encoderModel,outputShape,learningRate,lrdecay):
+    def makeModel(self,inputShape,outputShape,args):
         """
             overrides base function
             Create and return a Keras Model
         """
+        [basemodel,learningRate,lrdecay] = args
+        layer_name = 'dense'
+        encoder = Model(inputs=basemodel.input,
+                                       outputs=basemodel.get_layer(layer_name).output)
         
-
-        layer_name = 'dense1' #TODO: find out real name
-        model = keras.Model(inputs=model.input,
-                                       outputs=model.get_layer(layer_name).output)
-        
-        for layer in model.layers[:]:
-            layer.trainable = False
+        encoder.trainable = False
             
-        model.add(Dense(200))
-        model.add(Dense(100))
-        model.add(Dense(50))
-        model.add(Dense(outputShape))
+        input_ = Input(inputShape)
+        x = encoder(input_)
+        dense1 = Dense(200)(x)
+        dense2 = Dense(100)(dense1)
+        dense3 = Dense(50)(dense2)
+        dense4 = Dense(outputShape)(dense3)
+
+        model = Model(inputs=input_,outputs=dense4)
         
         model.compile(loss='mse',optimizer=Adam(lr=learningRate, decay = lrdecay))
         return model

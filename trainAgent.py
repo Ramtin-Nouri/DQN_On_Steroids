@@ -1,6 +1,7 @@
 import DynamicsNetwork,QNetwork,datamanager
 import TF2_Keras_Template as template
-import gym
+import gym,random,numpy as np
+from collections import deque
 random.seed(459)
 
 
@@ -20,12 +21,12 @@ env=gym.make("Breakout-v0")
 env.seed(459)
 
 
-encoder = QNetwork.NeuralNetwork()
+encoder = DynamicsNetwork.NeuralNetwork()
 encoderModel,_ = encoder.getModel((208,160,3),(208,160,3)) #original size is 210 but that's not divisible by 8
 
 
 net = QNetwork.NeuralNetwork()
-model,epoch = net.getModel(encoder,env.action_space.n,learningRate,lrdecay)
+model,epoch = net.getModel((208,160,3),env.action_space.n,[encoderModel,learningRate,lrdecay])
 
 #Get Loggers
 logger = template.Logger("savedata/",model)
@@ -60,7 +61,6 @@ def runOnce():
     score = 0
     state = env.reset()
     for step in range(totalSteps):
-        if render: env.render()
         action = getAction(state)
         newState, reward, done, _ = env.step(action)
         
@@ -83,7 +83,6 @@ def summaryAndQuit():
     
     
 memory = deque(maxlen=1000)
-model = makeModel()
 
 highScore = -100
 

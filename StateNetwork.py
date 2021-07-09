@@ -9,7 +9,7 @@ class NeuralNetwork(template.nnBase.NNBase):
         #Only sets the name of this class
         self.networkName = "Autoencoder"
             
-    def makeModel(self,inputShape,outputShape):
+    def makeModel(self,inputShape,outputShape,args=[]):
         """
             overrides base function
             Create and return a Keras Model

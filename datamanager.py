@@ -89,7 +89,7 @@ class DataGeneratorState():
             batchIn=[]
             for _ in range(self.batchsize):
                 datapoint = self.data.get()
-                batchIn1.append(datapoint)
+                batchIn.append(datapoint)
             yield (np.array(batchIn),np.array(batchIn))
 
     def getGenerator(self):
