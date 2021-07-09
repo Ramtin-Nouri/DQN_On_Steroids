@@ -1,9 +1,9 @@
-import stateencoder,datamanager,logger
+import StateNetwork,datamanager,logger
 
 batchsize = 16
 
 
-net = stateencoder.NeuralNetwork()
+net = StateNetwork.NeuralNetwork()
 model,epoch = net.getModel((208,160,3),(208,160,3)) #original size is 210 but that's not divisible by 8
 
 dataGen = datamanager.DataGeneratorState("Breakout-v0",batchsize,debugMode=False)

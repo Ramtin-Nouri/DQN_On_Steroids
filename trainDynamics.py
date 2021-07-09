@@ -1,9 +1,9 @@
-import dynamicsencoder,datamanager,logger
+import DynamicsNetwork,datamanager,logger
 
 batchsize = 16
 
 
-net = dynamicsencoder.NeuralNetwork()
+net = DynamicsNetwork.NeuralNetwork()
 model,epoch = net.getModel((208,160,6),(208,160,3)) #original size is 210 but that's not divisible by 8
 
 dataGen = datamanager.DataGeneratorDynamics("Breakout-v0",batchsize,debugMode=False)
