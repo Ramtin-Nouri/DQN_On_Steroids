@@ -1,18 +1,17 @@
-import TF2_Keras_Template as template
-import autoencoder,datamanager
+import autoencoder,datamanager,logger
 
 batchsize = 16
 
 
 net = autoencoder.NeuralNetwork()
-model,epoch = net.getModel((160,208,6),(160,208,3)) #original size is 210 but that's not divisible by 8
+model,epoch = net.getModel((208,160,6),(208,160,3)) #original size is 210 but that's not divisible by 8
 
 dataGen = datamanager.DataGenerator("Breakout-v0",batchsize,debugMode=False)
 
 #Get Loggers
-logger = template.Logger("savedata/",model)
+logger = logger.DoubleInputLogger("savedata/",model)
 logger.setTestImages("data/test")
-callbacks = logger.getCallbacks(period=20,predict=False) #predict set to False until its working 
+callbacks = logger.getCallbacks(period=20) #predict set to False until its working 
 #TODO:implement class inheriting Logger and overwriting getImgPredictions()
 
 model.fit(dataGen.getGenerator(),

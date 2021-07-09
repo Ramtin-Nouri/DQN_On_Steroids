@@ -28,11 +28,11 @@ class DataGenerator():
                 self.env.render()
             
             obs = obs/255
-            obs = cv2.resize(obs,(208,160)) #TODO: remove magicnumbers
-            self.data.put((action,obs/255))
+            obs = obs[2:]
+            self.data.put((action,obs))
 
     def _generator(self):
-        actionShape = (20,26,1)
+        actionShape = (26,20,1)
         while True:
             batchIn1=[]
             batchIn2=[]
