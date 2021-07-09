@@ -11,8 +11,7 @@ dataGen = datamanager.DataGeneratorState("Breakout-v0",batchsize,debugMode=False
 #Get Loggers
 logger = logger.DoubleInputLogger("savedata/",model)
 logger.setTestImages("data/test")
-callbacks = logger.getCallbacks(period=20) #predict set to False until its working 
-#TODO:implement class inheriting Logger and overwriting getImgPredictions()
+callbacks = logger.getCallbacks(period=20) 
 
 model.fit(dataGen.getGenerator(),
                 steps_per_epoch=1000,
