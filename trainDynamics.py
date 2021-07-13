@@ -1,4 +1,5 @@
-import DynamicsNetwork,datamanager,logger
+from nets import DynamicsNetwork
+import datamanager,logger
 
 batchsize = 16
 

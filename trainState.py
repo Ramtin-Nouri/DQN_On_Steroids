@@ -1,4 +1,5 @@
-import StateNetwork,datamanager,logger
+from nets import StateNetwork
+import datamanager,logger
 
 batchsize = 16
 

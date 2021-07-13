@@ -1,4 +1,5 @@
-import DynamicsNetwork,QNetwork,datamanager
+from nets import DynamicsNetwork,QNetwork
+import datamanager
 import TF2_Keras_Template as template
 import gym,random,numpy as np
 from collections import deque
