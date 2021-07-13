@@ -3,6 +3,30 @@ from threading import Thread
 from queue import Queue
 import numpy as np,cv2
 
+def getAction(obs):
+    def getRed(img):
+        indices = np.where(np.all(img==(200/255,72/255,72/255),axis=-1))
+        return list(zip(indices[0],indices[1]))
+    NOTHING = 0
+    FIRE = 1
+    RIGHT = 2
+    LEFT = 3
+
+    try:
+        paddlePos = getRed(obs[188:-17,8:-8])[0]
+    except: 
+        print(obs[188:-17,8:-8])
+    ballPos = getRed(obs[68:-21,8:-8])
+    if len(ballPos) < 1:
+        action = FIRE
+    elif paddlePos[1]+17<ballPos[0][1]:
+        action = RIGHT
+    elif paddlePos[1]>ballPos[0][1]:
+        action = LEFT
+    else:
+        action = NOTHING
+    return action
+
 class DataGeneratorDynamics():
     #TODO:ADD COMMENTS
     
@@ -18,8 +42,8 @@ class DataGeneratorDynamics():
     
     def gatherData(self):
         self.env.reset()
+        action = 1
         while self.shouldRun:
-            action = self.env.action_space.sample()
             obs,_,done,_ = self.env.step(action)
             if done:
                 self.env.reset()
@@ -30,6 +54,8 @@ class DataGeneratorDynamics():
             obs = obs/255
             obs = obs[2:]
             self.data.put((action,obs))
+            action = getAction(obs)
+
 
     def _generator(self):
         actionShape = (26,20,1)
@@ -71,8 +97,8 @@ class DataGeneratorState():
     
     def gatherData(self):
         self.env.reset()
+        action = 1
         while self.shouldRun:
-            action = self.env.action_space.sample()
             obs,_,done,_ = self.env.step(action)
             if done:
                 self.env.reset()
@@ -83,6 +109,7 @@ class DataGeneratorState():
             obs = obs/255
             obs = obs[2:]
             self.data.put(obs)
+            action = getAction(obs)
 
     def _generator(self):
         while True:
