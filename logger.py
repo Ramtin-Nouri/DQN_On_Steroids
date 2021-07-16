@@ -31,3 +31,11 @@ class DoubleInputLogger(template.Logger):
         #Pray they are actually images
         for img in imgpaths:
             self.testImages.append(cv2.imread(F"{testImageFolder}/{img}"))
+
+class ClippedLogger(template.Logger):
+
+    def setTestImages(self,testImageFolder):
+        imgpaths = os.listdir(testImageFolder)[:8]
+        #Pray they are actually images
+        for img in imgpaths:
+            self.testImages.append(cv2.imread(F"{testImageFolder}/{img}")[2:])

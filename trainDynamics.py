@@ -9,7 +9,7 @@ model,epoch = net.getModel((208,160,6),(208,160,3)) #original size is 210 but th
 dataGen = datamanager.DataGeneratorDynamics("Breakout-v0",batchsize,debugMode=False)
 
 #Get Loggers
-logger = logger.DoubleInputLogger("savedata/",model)
+logger = logger.DoubleInputLogger("savedata/dynamics/",model)
 logger.setTestImages("data/test")
 callbacks = logger.getCallbacks(period=20)
 
