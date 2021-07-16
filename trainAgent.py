@@ -1,4 +1,5 @@
-import DynamicsNetwork,QNetwork,datamanager
+from nets import DynamicsNetwork,QNetwork
+import datamanager
 import TF2_Keras_Template as template
 import gym,random,numpy as np
 from collections import deque
@@ -17,7 +18,7 @@ min_epsilon = 0.01
 max_epsilon = 1.0
 decay = 0.005
 
-env=gym.make("Breakout-v0")
+env=gym.make("Breakout-v4")
 env.seed(459)
 
 
