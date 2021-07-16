@@ -172,8 +172,8 @@ class DataGeneratorState(DataGenerator):
         while True:
             batchIn=[]
             for _ in range(self.batchsize):
-                datapoint = self.data.get()
-                batchIn.append(datapoint)
+                _,observation = self.data.get()
+                batchIn.append(observation)
             yield (np.array(batchIn),np.array(batchIn))
 
 
