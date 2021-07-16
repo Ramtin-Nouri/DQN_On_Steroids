@@ -19,18 +19,13 @@ class NeuralNetwork(template.nnBase.NNBase):
 
         conv1 = Conv2D(32, (3, 3), activation='relu',padding='same')(observations_input)
         pool1 = MaxPooling2D((2, 2))(conv1)
-        conv2 = Conv2D(64, (3, 3), activation='relu',padding='same')(pool1)
+        conv2 = Conv2D(32, (3, 3), activation='relu',padding='same')(pool1)
         pool2 = MaxPooling2D((2, 2))(conv2)
-        conv3 = Conv2D(128, (3, 3), activation='relu',padding='same')(pool2)
-        pool3 = MaxPooling2D((2, 2))(conv3)
-        conv4 = Conv2D(256, (3, 3), activation='relu',padding='same')(pool3)
-        
-        dense = Dense(500)(conv4)
-                
-        conv5 = Conv2D(256, (3, 3), activation='relu',padding='same')(dense)
-        conv6 = Conv2D(128, (3, 3), activation='relu',padding='same')(conv5)
-        up2 = UpSampling2D((2,2))(conv6)
-        conv7 = Conv2D(64, (3, 3), activation='relu',padding='same')(up2)
+        conv3 = Conv2D(32, (3, 3), activation='relu',padding='same')(pool2)
+
+        dense = Dense(2000)(conv3)
+
+        conv7 = Conv2D(32, (3, 3), activation='relu',padding='same')(dense)
         up3 = UpSampling2D((2,2))(conv7)
         conv8 = Conv2D(32, (3, 3), activation='relu',padding='same')(up3)
         up4 = UpSampling2D((2,2))(conv8)
