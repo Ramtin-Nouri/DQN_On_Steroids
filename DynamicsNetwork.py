@@ -20,24 +20,39 @@ class NeuralNetwork(template.nnBase.NNBase):
 
         conv1 = Conv2D(32, (3, 3), activation='relu',padding='same')(observations_input)
         pool1 = MaxPooling2D((2, 2))(conv1)
-        conv2 = Conv2D(64, (3, 3), activation='relu',padding='same')(pool1)
+        drop1 = Dropout(0.1)(pool1)
+
+        conv2 = Conv2D(64, (3, 3), activation='relu',padding='same')(drop1)
         pool2 = MaxPooling2D((2, 2))(conv2)
-        conv3 = Conv2D(128, (3, 3), activation='relu',padding='same')(pool2)
+        drop2 = Dropout(0.1)(pool2)
+
+        conv3 = Conv2D(128, (3, 3), activation='relu',padding='same')(drop2)
         pool3 = MaxPooling2D((2, 2))(conv3)
-        conv4 = Conv2D(256, (3, 3), activation='relu',padding='same')(pool3)
+        drop3 = Dropout(0.1)(pool3)
+
+        conv4 = Conv2D(256, (3, 3), activation='relu',padding='same')(drop3)
         
-        dense = Dense(500)(conv4)
+
+        dense1 = Dense(2000)(conv4)#<- Hidden Representation
+        concat = concatenate([dense1,action_input],axis=3)
+
         
-        concat = concatenate([dense,action_input],axis=3)
         
         conv5 = Conv2D(256, (3, 3), activation='relu',padding='same')(concat)
-        conv6 = Conv2D(128, (3, 3), activation='relu',padding='same')(conv5)
-        up2 = UpSampling2D((2,2))(conv6)
-        conv7 = Conv2D(64, (3, 3), activation='relu',padding='same')(up2)
-        up3 = UpSampling2D((2,2))(conv7)
-        conv8 = Conv2D(32, (3, 3), activation='relu',padding='same')(up3)
-        up4 = UpSampling2D((2,2))(conv8)
-        conv9 = Conv2D(3, (3, 3), activation='relu',padding='same')(up4)
+        up1 = UpSampling2D((2,2))(conv5)
+        drop5 = Dropout(0.1)(up1)
+        
+
+        conv7 = Conv2D(64, (3, 3), activation='relu',padding='same')(drop5)
+        up2 = UpSampling2D((2,2))(conv7)
+        drop7 = Dropout(0.1)(up2)
+        
+
+        conv8 = Conv2D(32, (3, 3), activation='relu',padding='same')(drop7)
+        up3 = UpSampling2D((2,2))(conv8)
+        drop8 = Dropout(0.1)(up3)
+
+        conv9 = Conv2D(3, (3, 3), activation='relu',padding='same')(drop8)
               
         model = Model([observations_input,action_input],conv9)
         model.compile(optimizer='adam', loss='mse')
