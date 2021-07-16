@@ -29,7 +29,7 @@ net = QNetwork.NeuralNetwork()
 model,epoch = net.getModel((208,160,3),env.action_space.n,[encoderModel,learningRate,lrdecay])
 
 #Get Loggers
-logger = template.Logger("savedata/",model)
+logger = template.Logger("savedata/agent/",model)
 callbacks = logger.getCallbacks(period=20,predict=False)
 
 
