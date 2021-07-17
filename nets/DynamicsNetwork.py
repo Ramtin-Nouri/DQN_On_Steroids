@@ -18,42 +18,20 @@ class NeuralNetwork(template.nnBase.NNBase):
         observations_input = Input(shape=inputShape)
         action_input = Input(shape=(None,None,1))
 
-        conv1 = Conv2D(32, (3, 3), activation='relu',padding='same')(observations_input)
-        pool1 = MaxPooling2D((2, 2))(conv1)
-        drop1 = Dropout(0.1)(pool1)
+        x = Conv2D(32, (3, 3), activation='relu',padding='same')(observations_input)
+        x = MaxPooling2D((2, 2))(x)
+        x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
+        x = MaxPooling2D()(x)
 
-        conv2 = Conv2D(64, (3, 3), activation='relu',padding='same')(drop1)
-        pool2 = MaxPooling2D((2, 2))(conv2)
-        drop2 = Dropout(0.1)(pool2)
+        dense = Dense(1000)(x)
+        concat = concatenate([dense,action_input],axis=3)
 
-        conv3 = Conv2D(128, (3, 3), activation='relu',padding='same')(drop2)
-        pool3 = MaxPooling2D((2, 2))(conv3)
-        drop3 = Dropout(0.1)(pool3)
-
-        conv4 = Conv2D(256, (3, 3), activation='relu',padding='same')(drop3)
-        
-
-        dense1 = Dense(2000)(conv4)#<- Hidden Representation
-        concat = concatenate([dense1,action_input],axis=3)
-
-        
-        
-        conv5 = Conv2D(256, (3, 3), activation='relu',padding='same')(concat)
-        up1 = UpSampling2D((2,2))(conv5)
-        drop5 = Dropout(0.1)(up1)
-        
-
-        conv7 = Conv2D(64, (3, 3), activation='relu',padding='same')(drop5)
-        up2 = UpSampling2D((2,2))(conv7)
-        drop7 = Dropout(0.1)(up2)
-        
-
-        conv8 = Conv2D(32, (3, 3), activation='relu',padding='same')(drop7)
-        up3 = UpSampling2D((2,2))(conv8)
-        drop8 = Dropout(0.1)(up3)
-
-        conv9 = Conv2D(3, (3, 3), activation='relu',padding='same')(drop8)
+        x= UpSampling2D()(concat)
+        x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
+        x = UpSampling2D((2,2))(x)
+        x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
+        out = Conv2D(3, (3, 3), activation='relu',padding='same')(x)
               
-        model = Model([observations_input,action_input],conv9)
+        model = Model([observations_input,action_input],out)
         model.compile(optimizer='adam', loss='mse')
         return model

@@ -29,7 +29,6 @@ class NeuralNetwork(template.nnBase.NNBase):
         x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
         x = Conv2D(3, (3, 3), activation='relu',padding='same')(x)
 
-        #drop = Dropout(0.2)(x)      
         model = Model(observations_input,x)
         model.compile(optimizer='adam', loss='mse')
         return model

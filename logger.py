@@ -5,6 +5,9 @@ import tensorflow as tf
 import os,numpy as np,cv2
 
 class DoubleInputLogger(template.Logger):
+    def setActionSize(self,width,height):
+        self.action_width = width
+        self.action_height = height
     def getImgPrediction(self):
         outputs =[]
         for i in range(len(self.testImages)):
@@ -12,7 +15,7 @@ class DoubleInputLogger(template.Logger):
             img=self.testImages[i][2:]
             img2=self.testImages[i+1][2:]
             both = np.array([np.dstack([img,img2])])
-            in_ = [ both , np.zeros((1,26,20,1)) ]
+            in_ = [ both , np.zeros((1,self.action_width,self.action_height,1)) ]
             pred = self.model.predict(in_)[0]
             outputs.append(pred)
         return outputs
