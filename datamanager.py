@@ -120,15 +120,18 @@ class DataGeneratorDynamics(DataGenerator):
         (See DataGenerator)
         actionShape: tuple
             shape of the layer the action shall be concatinated to aka shape the action should be filled to
+        stackedObservationLength: int
+            number of frames to use as input of net
     """
 
-    def __init__(self,envname,batchsize,actionShape,queueSize=500,debugMode=False):
+    def __init__(self,envname,batchsize,actionShape,queueSize=500,debugMode=False,nFramesIn=4):
         """
             super call + set its fields
         """
 
         super().__init__(envname,batchsize,queueSize,debugMode)
         self.actionShape = actionShape
+        self.stackedObservationLength = nFramesIn
 
 
 
@@ -144,17 +147,22 @@ class DataGeneratorDynamics(DataGenerator):
             batchIn1=[]
             batchIn2=[]
             batchOut=[]
-            datapoint1 = self.data.get()
-            datapoint2 = self.data.get()
+            observationFrames = []
+            for _ in range(self.stackedObservationLength):
+                (_,obs) = self.data.get()
+                observationFrames.append(obs)
+
             for _ in range(self.batchsize):
-                datapoint3 = self.data.get()
-                observations = np.dstack([datapoint1[1],datapoint2[1]]) #last 2 obs
-                action = np.full(self.actionShape,datapoint3[0])
+                observations = np.dstack(observationFrames)
                 batchIn1.append(observations)
+
+                nextFrame = self.data.get()
+                action = np.full(self.actionShape,nextFrame[0])
                 batchIn2.append(action)
-                batchOut.append(np.array(datapoint3[1]))#predicted obs
-                datapoint1=datapoint2
-                datapoint2=datapoint3
+                batchOut.append(np.array(nextFrame[1]))#predicted obs
+
+                observationFrames.pop(0)
+                observationFrames.append(nextFrame[1])
             yield ([np.array(batchIn1),np.array(batchIn2)],np.array(batchOut))
 
 
