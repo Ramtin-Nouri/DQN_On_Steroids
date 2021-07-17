@@ -15,7 +15,7 @@ logger.setTestImages("data/test")
 callbacks = logger.getCallbacks(period=20) 
 
 model.fit(dataGen.getGenerator(),
-                steps_per_epoch=1000,
+                steps_per_epoch=100,
                 epochs=1000,
                 shuffle=True,
                 initial_epoch=epoch,
