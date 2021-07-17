@@ -25,8 +25,9 @@ class NeuralNetwork(template.nnBase.NNBase):
 
         dense = Dense(1000)(x)
         concat = concatenate([dense,action_input],axis=3)
+        drop = Dropout(0.01)(concat)
 
-        x= UpSampling2D()(concat)
+        x= UpSampling2D()(drop)
         x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
         x = UpSampling2D((2,2))(x)
         x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)

@@ -1,7 +1,7 @@
 from nets import DynamicsNetwork
 import datamanager,logger
 
-batchsize = 16
+batchsize = 8
 
 
 net = DynamicsNetwork.NeuralNetwork()
