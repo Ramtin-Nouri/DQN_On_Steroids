@@ -2,6 +2,9 @@ from tensorflow.keras.layers import Conv2D, Dropout, MaxPooling2D, UpSampling2D,
 from tensorflow.keras.models import Model
 
 import TF2_Keras_Template as template
+import tensorflow as tf
+tf.random.set_seed(111)
+
 
 class NeuralNetwork(template.nnBase.NNBase):
     

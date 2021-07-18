@@ -72,6 +72,7 @@ class DataGenerator():
         self.QUEUESIZE=queueSize
         self.data = Queue(maxsize=self.QUEUESIZE)
         self.env = gym.make(envname)
+        self.env.seed(111)
         self.shouldRun = True
         self.thread = Thread(target=self.gatherData)
         self.debugMode = debugMode
