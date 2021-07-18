@@ -1,7 +1,7 @@
 import gym
 from threading import Thread
 from queue import Queue
-import numpy as np,cv2
+import numpy as np,cv2, os
 
 
 def getAction(obs):
@@ -185,3 +185,50 @@ class DataGeneratorState(DataGenerator):
             yield (np.array(batchIn),np.array(batchIn))
 
 
+class ValidationDataDynamics():
+
+    def __init__(self, validationFolder,actionShape, nFramesIn=4):
+        self.y = []
+
+        imgpaths = os.listdir(validationFolder)
+        imgpaths.sort()
+        
+        imgs = []
+        for img in imgpaths:
+            imgs.append(cv2.imread(F"{validationFolder}/{img}"))
+        
+        counter = 0
+        stacks=[]
+        actions=[]
+        while len(imgs)>0:
+            
+            in_ = []
+            for _ in range(nFramesIn):
+                in_.append(imgs.pop(0))
+            stacks.append( np.dstack(in_) )
+
+            actionInt = int(imgpaths[5*counter].split("action-")[1].split(".png")[0])
+            actions.append( np.full((actionShape[0],actionShape[1],1),actionInt) )
+
+            self.y.append(imgs.pop(0))
+
+            counter += 1
+
+        print(np.array(stacks).shape,np.array(actions).shape)
+        self.x = [np.array(stacks),np.array(actions)]
+
+        self.steps = len(self.y)
+
+    def getX(self):
+        return self.x
+
+    def getY(self):
+        return np.array(self.y)
+
+    def getSteps(self):
+        return self.steps
+
+    def getBatchsize(self):
+        return 1
+
+    
