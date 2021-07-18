@@ -1,5 +1,6 @@
 from nets import DynamicsNetwork
 import datamanager,logger
+import tensorflow as tf
 
 batchsize = 8
 
@@ -16,6 +17,8 @@ logger.setActionSize(52,40)
 logger.setTestImages("data/test")
 callbacks = logger.getCallbacks(period=20)
 
+callbacks.append(tf.keras.callbacks.EarlyStopping(patience=5,verbose=True,mode="min"))
+
 model.fit(dataGen.getGenerator(),
                 steps_per_epoch=100,
                 epochs=1000,
@@ -25,3 +28,6 @@ model.fit(dataGen.getGenerator(),
                 validation_data = (valData.getX(),valData.getY()),
                 validation_batch_size=valData.getBatchsize(),
                 validation_steps=valData.getSteps())
+
+dataGen.shouldRun = False
+next(dataGen.getGenerator()) #Just in case it is waiting to add to queue

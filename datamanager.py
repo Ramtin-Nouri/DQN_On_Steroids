@@ -147,12 +147,13 @@ class DataGeneratorDynamics(DataGenerator):
             batchIn1=[]
             batchIn2=[]
             batchOut=[]
-            observationFrames = []
-            for _ in range(self.stackedObservationLength):
-                (_,obs) = self.data.get()
-                observationFrames.append(obs)
 
             for _ in range(self.batchsize):
+                observationFrames = []
+                for _ in range(self.stackedObservationLength):
+                    (_,obs) = self.data.get()
+                    observationFrames.append(obs)
+
                 observations = np.dstack(observationFrames)
                 batchIn1.append(observations)
 
@@ -161,8 +162,8 @@ class DataGeneratorDynamics(DataGenerator):
                 batchIn2.append(action)
                 batchOut.append(np.array(nextFrame[1]))#predicted obs
 
-                observationFrames.pop(0)
-                observationFrames.append(nextFrame[1])
+                #Throw away some, so that we get more different data
+                for _ in range(20):self.data.get()
             yield ([np.array(batchIn1),np.array(batchIn2)],np.array(batchOut))
 
 
