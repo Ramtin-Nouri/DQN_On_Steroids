@@ -10,14 +10,15 @@ class NeuralNetwork(template.nnBase.NNBase):
         #Only sets the name of this class
         self.networkName = "Autoencoder"
             
-    def makeModel(self,inputShape,outputShape,args):
+    def makeModel(self,inputShape,args):
         """
             overrides base function
             Create and return a Keras Model
+            Instead of outputShape as intended ,use second parameter for list of arguments
         """
-        [basemodel,learningRate,lrdecay] = args
+        [outputShape,basemodel,learningRate,lrdecay] = args
         layer_name = 'dense'
-        encoder = Model(inputs=basemodel.input,
+        encoder = Model(inputs=basemodel.layers[0].input,
                                        outputs=basemodel.get_layer(layer_name).output)
         
         encoder.trainable = False

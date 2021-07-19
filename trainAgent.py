@@ -1,8 +1,8 @@
 from nets import DynamicsNetwork,QNetwork
-import datamanager
 import TF2_Keras_Template as template
-import gym,random,numpy as np
+import gym,random,numpy as np, os
 from collections import deque
+from tqdm import tqdm
 random.seed(459)
 
 
@@ -27,7 +27,7 @@ encoderModel,_ = encoder.getModel((208,160,3),(208,160,3)) #original size is 210
 
 
 net = QNetwork.NeuralNetwork()
-model,epoch = net.getModel((208,160,3),env.action_space.n,[encoderModel,learningRate,lrdecay])
+model,epoch = net.getModel((208,160,3),[env.action_space.n,encoderModel,learningRate,lrdecay])
 
 #Get Loggers
 logger = template.Logger("savedata/agent/",model)
@@ -60,10 +60,11 @@ def replay():
 
 def runOnce():
     score = 0
-    state = env.reset()
-    for step in range(totalSteps):
+    state = env.reset()[2:]
+    for _ in tqdm(range(totalSteps)):
         action = getAction(state)
         newState, reward, done, _ = env.step(action)
+        newState = newState[2:]
         
         score += reward
             

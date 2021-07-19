@@ -15,7 +15,7 @@ valData = datamanager.ValidationDataDynamics("data/test",actionShape=(52,40),nFr
 logger = logger.MultiInputLogger("savedata/dynamics/",model)
 logger.setActionSize(52,40)
 logger.setTestImages("data/test")
-callbacks = logger.getCallbacks(period=20)
+callbacks = logger.getCallbacks(period=1)
 
 callbacks.append(tf.keras.callbacks.EarlyStopping(patience=5,verbose=True,mode="min"))
 
