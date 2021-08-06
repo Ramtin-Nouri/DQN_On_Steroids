@@ -29,7 +29,7 @@ class MultiInputLogger(template.Logger):
                 both[i]=self.testImages[int(i/2)][1]
             else:
                 both[i]=predictions[int(i/2)]
-        stacked = self.stack(both)
+        stacked = self.stack(both)*255
         cv2.imwrite(name,stacked)
         conv = np.array([np.clip(stacked,0,255)],dtype=np.uint8)
         with fileWriter.as_default():
@@ -43,7 +43,7 @@ class MultiInputLogger(template.Logger):
         
         imgs = []
         for img in imgpaths:
-            imgs.append(cv2.imread(F"{testImageFolder}/{img}"))
+            imgs.append(cv2.imread(F"{testImageFolder}/{img}")/255)
         
         for sequence in range(self.sequenceLength):
             in_ = []
