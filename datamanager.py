@@ -182,12 +182,14 @@ class DataGeneratorState(DataGenerator):
 
         while True:
             batchIn=[]
+            batchOut = []
             for _ in range(self.batchsize):
                 _,observation = self.data.get()
                 noiseAmount = 0.1
                 augmented = observation + np.random.uniform(-noiseAmount,noiseAmount,observation.shape) #add noise and brightness
                 batchIn.append(augmented)
-            yield (np.array(batchIn),np.array(batchIn))
+                batchOut.append(observation)
+            yield (np.array(batchIn),np.array(batchOut))
 
 
 class ValidationDataDynamics():
