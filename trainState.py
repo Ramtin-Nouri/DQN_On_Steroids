@@ -17,7 +17,7 @@ valData = datamanager.ValidationDataState("data/test")
 logger = template.Logger("savedata/state/",model)
 logger.setTestImages("data/test")
 callbacks = logger.getCallbacks(period=1) 
-callbacks.append(tf.keras.callbacks.EarlyStopping(patience=10,verbose=True,mode="min"))
+callbacks.append(tf.keras.callbacks.EarlyStopping(patience=20,verbose=True,mode="min"))
 
 
 model.fit(dataGen.getGenerator(),

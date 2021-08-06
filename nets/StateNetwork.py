@@ -1,6 +1,5 @@
-from tensorflow.keras.layers import Conv2D, Dropout, MaxPooling2D, UpSampling2D, concatenate, Input, Dense
+from tensorflow.keras.layers import Conv2D, Dropout, MaxPooling2D, UpSampling2D, concatenate, Input, Dense, BatchNormalization
 from tensorflow.keras.models import Model
-from tensorflow.python.keras.backend import dropout
 
 import TF2_Keras_Template as template
 
@@ -23,6 +22,7 @@ class NeuralNetwork(template.nnBase.NNBase):
         x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
 
         x = Conv2D(8, (3, 3), activation='relu',padding='same')(x)
+        x = Dropout(0.01)(x)
 
         x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
         x = UpSampling2D((2,2))(x)
