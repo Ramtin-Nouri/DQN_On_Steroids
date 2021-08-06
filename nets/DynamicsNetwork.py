@@ -24,11 +24,11 @@ class NeuralNetwork(template.nnBase.NNBase):
 
         x = Conv2D(32, (3, 3), activation='relu',padding='same')(observations_input)
         x = MaxPooling2D((2, 2))(x)
-        x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
+        x = Conv2D(64, (3, 3), activation='relu',padding='same')(x)
         x = MaxPooling2D()(x)
 
-        dense = Dense(1000)(x)
-        concat = concatenate([dense,action_input],axis=3)
+        x = Conv2D(128, (3, 3), activation='relu',padding='same')(x)
+        concat = concatenate([x,action_input],axis=3)
         drop = Dropout(0.01)(concat)
 
         x= UpSampling2D()(drop)
