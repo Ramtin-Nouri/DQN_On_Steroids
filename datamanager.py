@@ -234,3 +234,31 @@ class ValidationDataDynamics():
         return 1
 
     
+
+class ValidationDataState():
+
+    def __init__(self, validationFolder):
+        self.y = []
+
+        imgpaths = os.listdir(validationFolder)
+        imgpaths.sort()
+        
+        imgs = []
+        for img in imgpaths:
+            imgs.append(cv2.imread(F"{validationFolder}/{img}"))
+        
+        self.x = [np.array(imgs)]
+        self.y = self.x
+        self.steps = len(self.y)
+
+    def getX(self):
+        return self.x
+
+    def getY(self):
+        return self.y
+
+    def getSteps(self):
+        return self.steps
+
+    def getBatchsize(self):
+        return 1

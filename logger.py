@@ -55,11 +55,3 @@ class MultiInputLogger(template.Logger):
             action = np.full((1,self.action_width,self.action_height,1),actionInt)
 
             self.testImages.append( ([stack,action],imgs.pop(0)) )
-
-class ClippedLogger(template.Logger):
-
-    def setTestImages(self,testImageFolder):
-        imgpaths = os.listdir(testImageFolder)[:8]
-        #Pray they are actually images
-        for img in imgpaths:
-            self.testImages.append(cv2.imread(F"{testImageFolder}/{img}")[2:])
