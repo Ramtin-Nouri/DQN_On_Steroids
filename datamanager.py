@@ -108,6 +108,7 @@ class DataGenerator():
             
             obs = obs/255
             obs = obs[2:]
+            
             self.data.put((action,obs))
             action = getAction(obs)
 
@@ -183,7 +184,10 @@ class DataGeneratorState(DataGenerator):
             batchIn=[]
             for _ in range(self.batchsize):
                 _,observation = self.data.get()
-                batchIn.append(observation)
+                noiseAmount = 0.1
+                brightness = np.random.uniform(-noiseAmount,noiseAmount,(1,)) #for changing global brightness of image
+                augmented = observation + np.random.uniform(-noiseAmount,noiseAmount,observation.shape) + brightness #add noise and brightness
+                batchIn.append(augmented)
             yield (np.array(batchIn),np.array(batchIn))
 
 
