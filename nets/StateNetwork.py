@@ -18,14 +18,40 @@ class NeuralNetwork(template.nnBase.NNBase):
         observations_input = Input(shape=inputShape)
 
         x = Conv2D(32, (3, 3), activation='relu',padding='same')(observations_input)
+        x = BatchNormalization()(x)
+        x = Dropout(0.1)(x)
         x = MaxPooling2D((2, 2))(x)
-        x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
 
-        x = Conv2D(8, (3, 3), activation='relu',padding='same')(x)
-        x = Dropout(0.01)(x)
+        x = Conv2D(64, (3, 3), activation='relu',padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.1)(x)
+        x = MaxPooling2D((2, 2))(x)
+
+        x = Conv2D(128, (3, 3), activation='relu',padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.1)(x)
+        x = MaxPooling2D((2, 2))(x)
+
 
         x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
+        x = Conv2D(8, (3, 3), activation='relu',padding='same',name="encoding")(x)
+        x = Dropout(0.1)(x)
+
+        x = Conv2D(128, (3, 3), activation='relu',padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.1)(x)
         x = UpSampling2D((2,2))(x)
+
+        x = Conv2D(64, (3, 3), activation='relu',padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.1)(x)
+        x = UpSampling2D((2,2))(x)
+
+        x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.1)(x)
+        x = UpSampling2D((2,2))(x)
+        
         x = Conv2D(32, (3, 3), activation='relu',padding='same')(x)
         x = Conv2D(3, (3, 3), activation='relu',padding='same')(x)
 
