@@ -1,6 +1,7 @@
 from nets import StateNetwork
 import datamanager,logger
 import TF2_Keras_Template as template
+import tensorflow as tf
 
 batchsize = 8
 
@@ -15,7 +16,9 @@ valData = datamanager.ValidationDataState("data/test")
 #Get Loggers
 logger = template.Logger("savedata/state/",model)
 logger.setTestImages("data/test")
-callbacks = logger.getCallbacks(period=20) 
+callbacks = logger.getCallbacks(period=1) 
+callbacks.append(tf.keras.callbacks.EarlyStopping(patience=10,verbose=True,mode="min"))
+
 
 model.fit(dataGen.getGenerator(),
                 steps_per_epoch=100,
