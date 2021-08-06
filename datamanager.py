@@ -200,7 +200,7 @@ class ValidationDataDynamics():
         
         imgs = []
         for img in imgpaths:
-            imgs.append(cv2.imread(F"{validationFolder}/{img}"))
+            imgs.append(cv2.imread(F"{validationFolder}/{img}")/255)
         
         counter = 0
         stacks=[]
@@ -248,7 +248,7 @@ class ValidationDataState():
         
         imgs = []
         for img in imgpaths:
-            imgs.append(cv2.imread(F"{validationFolder}/{img}"))
+            imgs.append(cv2.imread(F"{validationFolder}/{img}")/255)
         
         self.x = [np.array(imgs)]
         self.y = self.x
