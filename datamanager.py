@@ -185,8 +185,7 @@ class DataGeneratorState(DataGenerator):
             for _ in range(self.batchsize):
                 _,observation = self.data.get()
                 noiseAmount = 0.1
-                brightness = np.random.uniform(-noiseAmount,noiseAmount,(1,)) #for changing global brightness of image
-                augmented = observation + np.random.uniform(-noiseAmount,noiseAmount,observation.shape) + brightness #add noise and brightness
+                augmented = observation + np.random.uniform(-noiseAmount,noiseAmount,observation.shape) #add noise and brightness
                 batchIn.append(augmented)
             yield (np.array(batchIn),np.array(batchIn))
 
