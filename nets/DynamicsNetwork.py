@@ -1,7 +1,5 @@
 from tensorflow.keras.layers import Conv2D, Dropout, MaxPooling2D, UpSampling2D, concatenate, Input, Dense
 from tensorflow.keras.models import Model
-from tensorflow.python.keras.layers.normalization_v2 import BatchNormalization
-from tensorflow_addons.optimizers import AdamW
 
 import TF2_Keras_Template as template
 import tensorflow as tf
@@ -55,6 +53,6 @@ class NeuralNetwork(template.nnBase.NNBase):
             return tf.multiply(mse, red)
 
         model = Model([observations_input,action_input],out)
-        model.compile(optimizer=AdamW(weight_decay=1e-4), loss=weightedMSE,run_eagerly=True)
+        model.compile(optimizer="adam", loss=weightedMSE,run_eagerly=True)
         return model
 
