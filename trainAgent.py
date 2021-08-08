@@ -1,8 +1,9 @@
-from nets import DynamicsNetwork,QNetwork
+from nets import DynamicsNetwork,QNetwork, StateNetwork
 import TF2_Keras_Template as template
 import gym,random,numpy as np, os
 from collections import deque
 from tqdm import tqdm
+import tensorflow as tf
 random.seed(459)
 
 
@@ -13,16 +14,16 @@ lrdecay = 0.01
 gamma = 0.95
 batchSize = 64
 
-epsilon = 1.0
+epsilon = 0.9
 min_epsilon = 0.01
-max_epsilon = 1.0
-decay = 0.005
+max_epsilon = 0.9
+decay = 0.01
 
 env=gym.make("Breakout-v4")
 env.seed(459)
 
 
-encoder = DynamicsNetwork.NeuralNetwork()
+encoder = StateNetwork.NeuralNetwork()
 encoderModel,_ = encoder.getModel((208,160,3),(208,160,3)) #original size is 210 but that's not divisible by 8
 
 
@@ -33,11 +34,14 @@ model,epoch = net.getModel((208,160,3),[env.action_space.n,encoderModel,learning
 logger = template.Logger("savedata/agent/",model)
 callbacks = logger.getCallbacks(period=20,predict=False)
 
+file_writer = tf.summary.create_file_writer(logger.folderName)
+file_writer.set_as_default()
+
 
 def getAction(state):
     exploit= random.uniform(0,1)
     if exploit > epsilon:
-        prediction = model.predict(np.array([state]))
+        prediction = model.predict(np.array([state]))[0]
         return prediction.argmax()
     else:
         return env.action_space.sample()
@@ -77,19 +81,12 @@ def runOnce():
         state = newState
     return score
     
-def summaryAndQuit():
-    global summary
-    for t in summary:
-        print(t)
-    os._exit(1)
-    
+   
     
 memory = deque(maxlen=1000)
-
-highScore = -100
-
+highScore = 0
 scoreQue = deque(maxlen=100)
-summary = []
+
 for episode in range(totalEpisodes):
     score = runOnce()
     if score > highScore:
@@ -98,8 +95,7 @@ for episode in range(totalEpisodes):
     scoreQue.append(score)
     rm = np.mean(scoreQue)
     print("Episode: ",episode, "| Score: " ,score,"| HighScore: ",highScore, "| Epsilon: ", epsilon, "Running Mean: ", np.mean(scoreQue))
-    #TODO: use tensorboard instead
-    if episode%10==0 and episode !=0:
-        summary.append((episode, score, rm))
-
-summaryAndQuit()
+    tf.summary.scalar("Score",score,step=episode)
+    tf.summary.scalar("Highscore",highScore,step=episode)
+    tf.summary.scalar("Epsilon",epsilon,step=episode)
+    tf.summary.scalar("Running Mean",np.mean(scoreQue),step=episode)
