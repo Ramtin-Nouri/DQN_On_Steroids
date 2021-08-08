@@ -29,3 +29,5 @@ model.fit(dataGen.getGenerator(),
                 validation_data = (valData.getX(),valData.getY()),
                 validation_batch_size=valData.getBatchsize(),
                 validation_steps=valData.getSteps())
+                
+next(dataGen.getGenerator()) #Just in case it is waiting to add to queue
