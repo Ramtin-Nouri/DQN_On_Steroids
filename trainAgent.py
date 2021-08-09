@@ -6,7 +6,7 @@ from tqdm import tqdm
 import tensorflow as tf
 random.seed(459)
 
-
+maxQueueSize=1000
 totalSteps = 2000
 totalEpisodes = 10000
 learningRate = 0.01
@@ -23,17 +23,15 @@ env=gym.make("Breakout-v4")
 env.seed(459)
 
 
-encoder = StateNetwork.NeuralNetwork()
-encoderModel,_ = encoder.getModel((208,160,3),(208,160,3)) #original size is 210 but that's not divisible by 8
+autoencoderNN = StateNetwork.NeuralNetwork()
+autoencoderModel,_ = autoencoderNN.getModel((208,160,3),(208,160,3)) #original size is 210 but that's not divisible by 8
 
 
 net = QNetwork.NeuralNetwork()
-model,epoch = net.getModel((208,160,3),[env.action_space.n,encoderModel,learningRate,lrdecay])
+model,epoch = net.getModel((208,160,3),[env.action_space.n,autoencoderModel,learningRate,lrdecay])
 
 #Get Loggers
 logger = template.Logger("savedata/agent/",model)
-callbacks = logger.getCallbacks(period=20,predict=False)
-
 file_writer = tf.summary.create_file_writer(logger.folderName)
 file_writer.set_as_default()
 
@@ -62,7 +60,7 @@ def replay():
     model.train_on_batch(np.array(states),np.array(targets))
 
 
-def runOnce():
+def runEpisode():
     score = 0
     state = env.reset()[2:]
     for _ in tqdm(range(totalSteps)):
@@ -83,12 +81,12 @@ def runOnce():
     
    
     
-memory = deque(maxlen=1000)
+memory = deque(maxlen=maxQueueSize)
 highScore = 0
 scoreQue = deque(maxlen=100)
 
 for episode in range(totalEpisodes):
-    score = runOnce()
+    score = runEpisode()
     if score > highScore:
         highScore = score
     epsilon = min_epsilon + (max_epsilon - min_epsilon)*np.exp(-decay*episode)
