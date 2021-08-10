@@ -1,34 +1,43 @@
-from nets import DynamicsNetwork,QNetwork, StateNetwork
+from nets import QNetwork
 import TF2_Keras_Template as template
-import gym,random,numpy as np, os
+import gym,random,numpy as np, sys
 from collections import deque
 from tqdm import tqdm
 import tensorflow as tf
+from tensorflow.keras.models import load_model,Model
 random.seed(459)
 
-maxQueueSize=1000
+maxQueueSize=10000
 totalSteps = 2000
 totalEpisodes = 10000
 learningRate = 0.01
 lrdecay = 0.01
 gamma = 0.95
-batchSize = 64
+batchSize = 2048
 
-epsilon = 0.9
+epsilon = 1.0
 min_epsilon = 0.01
-max_epsilon = 0.9
+max_epsilon = 1.0
 decay = 0.01
 
 env=gym.make("Breakout-v4")
 env.seed(459)
 
+#Get Encoder Model
+try:
+    autoencoderModel = load_model(sys.argv[1],compile=False)
+except:
+    print("ERROR: Please specify Path to encoder model as first parameter")
+    quit()
+layer_name = 'encoding'
+encoder = Model(inputs=autoencoderModel.layers[0].input,
+                                outputs=autoencoderModel.get_layer(layer_name).output)
 
-autoencoderNN = StateNetwork.NeuralNetwork()
-autoencoderModel,_ = autoencoderNN.getModel((208,160,3),(208,160,3)) #original size is 210 but that's not divisible by 8
+            
 
 
 net = QNetwork.NeuralNetwork()
-model,epoch = net.getModel((208,160,3),[env.action_space.n,autoencoderModel,learningRate,lrdecay])
+model,epoch = net.getModel(encoder.output_shape[1:],[env.action_space.n,learningRate,lrdecay])
 
 #Get Loggers
 logger = template.Logger("savedata/agent/",model)
@@ -62,11 +71,13 @@ def replay():
 
 def runEpisode():
     score = 0
-    state = env.reset()[2:]
+    obs = env.reset()[2:]
+    state = encoder.predict(np.array([obs]))[0]
     for _ in tqdm(range(totalSteps)):
         action = getAction(state)
-        newState, reward, done, _ = env.step(action)
-        newState = newState[2:]
+        obs, reward, done, _ = env.step(action)
+        obs = np.array([obs[2:]])
+        newState = encoder.predict(obs)[0]
         
         score += reward
             
