@@ -70,7 +70,7 @@ class Agent(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.env = Environment()
-        self.model = net.getModel(self.env.getOutputShape(),[self.env.getActionSpace(),learningRate,lrdecay])
+        self.model,_ = net.getModel(self.env.getOutputShape(),[self.env.getActionSpace(),learningRate,lrdecay])
         self.memory = deque(maxlen=maxQueueSize)
 
     def getAction(self,state):
@@ -114,7 +114,10 @@ class Agent(Thread):
                 tf.summary.scalar("Highscore",highScore,step=episode)
                 tf.summary.scalar("Epsilon",epsilon,step=episode)
                 tf.summary.scalar("Running Mean",np.mean(scoreQue),step=episode)
-                
+            
+    def copyModel(self,model):
+        self.model.set_weights(model.get_weights())
+
 
 class Trainer(Thread):
     """
@@ -146,6 +149,7 @@ class Trainer(Thread):
             with file_writer.as_default():
                 tf.summary.scalar("Loss",loss,step=self.epoch)
             #print(F"Epoch {self.epoch} ; Loss: {loss}")
+            agent.copyModel(self.model)
             self.epoch +=1
 
 
