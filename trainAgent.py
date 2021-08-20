@@ -7,18 +7,16 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model,Model
 random.seed(459)
 
-maxQueueSize=10000
+maxQueueSize=20000
 totalSteps = 2000
 totalEpisodes = 10000
-learningRate = 0.01
-lrdecay = 0.01
 gamma = 0.95
-batchSize = 1024
+batchSize = 5012
 
 epsilon = 1.0
 min_epsilon = 0.01
 max_epsilon = 1.0
-decay = 0.005
+decay = 0.0025
 
 class Environment():
     """
@@ -69,7 +67,7 @@ class Agent(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.env = Environment()
-        self.model,_ = net.getModel(self.env.getOutputShape(),[self.env.getActionSpace(),learningRate,lrdecay])
+        self.model,_ = net.getModel(self.env.getOutputShape(),self.env.getActionSpace())
         self.memory = deque(maxlen=maxQueueSize)
 
     def getAction(self,state):
@@ -125,7 +123,7 @@ class Trainer(Thread):
     """
     def __init__(self,agent):
         Thread.__init__(self)
-        self.model,self.epoch = net.getModel(agent.env.getOutputShape(),[agent.env.getActionSpace(),learningRate,lrdecay])
+        self.model,self.epoch = net.getModel(agent.env.getOutputShape(),agent.env.getActionSpace())
         self.agent = agent
 
     def run(self):
