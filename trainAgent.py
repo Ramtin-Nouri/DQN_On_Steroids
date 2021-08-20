@@ -109,10 +109,12 @@ class Agent(Thread):
             epsilon = min_epsilon + (max_epsilon - min_epsilon)*np.exp(-decay*episode)
             scoreQue.append(score)
             print("Episode: ",episode, "| Score: " ,score,"| HighScore: ",highScore, "| Epsilon: ", epsilon, "Running Mean: ", np.mean(scoreQue))
-            tf.summary.scalar("Score",score,step=episode)
-            tf.summary.scalar("Highscore",highScore,step=episode)
-            tf.summary.scalar("Epsilon",epsilon,step=episode)
-            tf.summary.scalar("Running Mean",np.mean(scoreQue),step=episode)
+            with file_writer.as_default():
+                tf.summary.scalar("Score",score,step=episode)
+                tf.summary.scalar("Highscore",highScore,step=episode)
+                tf.summary.scalar("Epsilon",epsilon,step=episode)
+                tf.summary.scalar("Running Mean",np.mean(scoreQue),step=episode)
+                
 
 class Trainer(Thread):
     """
@@ -141,7 +143,8 @@ class Trainer(Thread):
                 targets.append(allTargets[i])
 
             loss = self.model.train_on_batch(np.array(states),np.array(targets))
-            tf.summary.scalar("Loss",loss,step=self.epoch)
+            with file_writer.as_default():
+                tf.summary.scalar("Loss",loss,step=self.epoch)
             #print(F"Epoch {self.epoch} ; Loss: {loss}")
             self.epoch +=1
 
@@ -152,8 +155,6 @@ folderName = "%s%04d-%02d-%02d-%02d-%02d-%02d/" % ("savedata/agent/",today.year,
 os.makedirs("%s"%(folderName))
 
 file_writer = tf.summary.create_file_writer(folderName)
-file_writer.set_as_default()
-
 
 net = QNetwork.NeuralNetwork()
 agent = Agent()
