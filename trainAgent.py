@@ -1,6 +1,5 @@
 from threading import Thread
 from nets import QNetwork
-import TF2_Keras_Template as template
 import gym,random,numpy as np, sys,time,datetime,os
 from collections import deque
 from tqdm import tqdm
@@ -8,18 +7,18 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model,Model
 random.seed(459)
 
-maxQueueSize=1000
+maxQueueSize=10000
 totalSteps = 2000
 totalEpisodes = 10000
 learningRate = 0.01
 lrdecay = 0.01
 gamma = 0.95
-batchSize = 4
+batchSize = 1024
 
 epsilon = 1.0
 min_epsilon = 0.01
 max_epsilon = 1.0
-decay = 0.01
+decay = 0.005
 
 class Environment():
     """
@@ -100,6 +99,7 @@ class Agent(Thread):
         return score
     
     def run(self):
+        print("Starting Agent")
         highScore = 0
         scoreQue = deque(maxlen=100)
         for episode in range(totalEpisodes):
@@ -129,6 +129,7 @@ class Trainer(Thread):
         self.agent = agent
 
     def run(self):
+        print("Starting Trainer")
         while True:
             minibatch = self.agent.getMemorySample()
             targets = []
