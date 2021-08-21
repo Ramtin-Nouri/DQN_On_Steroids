@@ -18,7 +18,7 @@ min_epsilon = 0.01
 max_epsilon = 1.0
 decay = 0.0025
 
-class Environment():
+class StaticEnvironment():
     """
         Custom Wrapper around OpenAi Gym Environment running observations through an encoder model first
         And other useful functions
@@ -57,6 +57,51 @@ class Environment():
         obs = np.array([obs[2:]])
         return self.model.predict(obs)[0], reward, done
 
+class DynamicEnvironment():
+    """
+        Custom Wrapper around OpenAi Gym Environment running observations through an encoder model first.
+        Each output is based on 4 observations
+        And other useful functions
+    """
+    def __init__(self):
+        self.gym_env=gym.make("Breakout-v4")
+        self.gym_env.seed(459)
+        self.previousObservations = deque(maxlen=4)
+
+        #Get Autoencoder Model:
+        try:
+            autoencoder = load_model(sys.argv[1],compile=False)
+        except:
+            print("ERROR: Please specify Path to encoder model as first parameter")
+            quit()
+        #Extract Encoder part from autoencoder:
+        layer_name = 'encoding'
+        self.model = Model(inputs=autoencoder.layers[0].input,outputs=autoencoder.get_layer(layer_name).output)
+
+    def getOutputShape(self):
+        return self.model.output_shape[1:]
+    
+    def getActionSpace(self):
+        return self.gym_env.action_space.n
+
+    def getSample(self):
+        return self.gym_env.action_space.sample()
+
+    def reset(self):
+        obs = self.gym_env.reset()
+        obs = np.array([obs[2:]])
+        for _ in range(4):
+            self.previousObservations.append(obs)
+        stacked= np.stack(self.previousObservations,axis=-1).reshape(1,208,160,12)
+        return self.model.predict(stacked)[0]
+
+
+    def step(self,action):
+        obs, reward, done, _ = self.gym_env.step(action)
+        obs = np.array([obs[2:]])
+        self.previousObservations.append(obs)
+        stacked = np.stack(self.previousObservations,axis=-1).reshape(1,208,160,12)
+        return self.model.predict(stacked)[0], reward, done
             
 class Agent(Thread):
     """
@@ -66,7 +111,12 @@ class Agent(Thread):
 
     def __init__(self):
         Thread.__init__(self)
-        self.env = Environment()
+        if len(sys.argv)>2 and sys.argv[2]=="--dynamic":
+            print("Use Dynamic Environment")
+            self.env = DynamicEnvironment()
+        else:
+            print("Use Static Environment")
+            self.env = StaticEnvironment()
         self.model,_ = net.getModel(self.env.getOutputShape(),self.env.getActionSpace())
         self.memory = deque(maxlen=maxQueueSize)
 
@@ -83,6 +133,7 @@ class Agent(Thread):
 
     def runEpisode(self):
         score = 0
+        steps = 0
         state = self.env.reset()
         for _ in tqdm(range(totalSteps)):
             action = self.getAction(state)
@@ -94,14 +145,15 @@ class Agent(Thread):
             if done:
                 break            
             state = newState
-        return score
+            steps += 1
+        return score,steps
     
     def run(self):
         print("Starting Agent")
         highScore = 0
         scoreQue = deque(maxlen=100)
         for episode in range(totalEpisodes):
-            score = self.runEpisode()
+            score,steps = self.runEpisode()
             if score > highScore:
                 highScore = score
             epsilon = min_epsilon + (max_epsilon - min_epsilon)*np.exp(-decay*episode)
@@ -109,6 +161,7 @@ class Agent(Thread):
             print("Episode: ",episode, "| Score: " ,score,"| HighScore: ",highScore, "| Epsilon: ", epsilon, "Running Mean: ", np.mean(scoreQue))
             with file_writer.as_default():
                 tf.summary.scalar("Score",score,step=episode)
+                tf.summary.scalar("Episode Length",steps,step=episode)
                 tf.summary.scalar("Highscore",highScore,step=episode)
                 tf.summary.scalar("Epsilon",epsilon,step=episode)
                 tf.summary.scalar("Running Mean",np.mean(scoreQue),step=episode)
@@ -148,8 +201,9 @@ class Trainer(Thread):
             with file_writer.as_default():
                 tf.summary.scalar("Loss",loss,step=self.epoch)
             #print(F"Epoch {self.epoch} ; Loss: {loss}")
-            agent.copyModel(self.model)
             self.epoch +=1
+            if self.epoch % 100==0:
+                agent.copyModel(self.model)
 
 
 #Get Tensorboard filewriter
@@ -162,6 +216,7 @@ file_writer = tf.summary.create_file_writer(folderName)
 net = QNetwork.NeuralNetwork()
 agent = Agent()
 trainer = Trainer(agent)
+agent.copyModel(trainer.model)
 
 with open('%s/architecture.txt'%(folderName),'w') as fh:
     trainer.model.summary(print_fn=lambda x: fh.write(x + '\n'))
