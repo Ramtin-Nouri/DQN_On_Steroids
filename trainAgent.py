@@ -7,16 +7,19 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model,Model
 random.seed(459)
 
-maxQueueSize=20000
+maxQueueSize=50000
 totalSteps = 2000
-totalEpisodes = 10000
-gamma = 0.95
-batchSize = 5012
+totalEpisodes = 100000
+gamma = 0.99
+batchSize = 2048
+
+learningRate = 0.0001
+lrdecay = 0.99
 
 epsilon = 1.0
 min_epsilon = 0.01
 max_epsilon = 1.0
-decay = 0.0025
+decay = 0.001
 
 class StaticEnvironment():
     """
@@ -24,7 +27,7 @@ class StaticEnvironment():
         And other useful functions
     """
     def __init__(self):
-        self.gym_env=gym.make("Breakout-v4")
+        self.gym_env=gym.make("BreakoutNoFrameskip-v4")
         self.gym_env.seed(459)
 
         #Get Autoencoder Model:
@@ -117,7 +120,7 @@ class Agent(Thread):
         else:
             print("Use Static Environment")
             self.env = StaticEnvironment()
-        self.model,_ = net.getModel(self.env.getOutputShape(),self.env.getActionSpace())
+        self.model,_ = net.getModel(self.env.getOutputShape(),[self.env.getActionSpace(),learningRate,lrdecay])
         self.memory = deque(maxlen=maxQueueSize)
 
     def getAction(self,state):
@@ -176,7 +179,7 @@ class Trainer(Thread):
     """
     def __init__(self,agent):
         Thread.__init__(self)
-        self.model,self.epoch = net.getModel(agent.env.getOutputShape(),agent.env.getActionSpace())
+        self.model,self.epoch = net.getModel(agent.env.getOutputShape(),[agent.env.getActionSpace(),learningRate,lrdecay])
         self.agent = agent
 
     def run(self):
