@@ -1,6 +1,7 @@
 from tensorflow.keras.layers import Conv2D, Flatten, MaxPooling2D, UpSampling2D, concatenate, Input, Dense
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import Huber
 
 import TF2_Keras_Template as template
 
@@ -27,5 +28,5 @@ class NeuralNetwork(template.nnBase.NNBase):
 
         model = Model(inputs=input_,outputs=x)
         
-        model.compile(loss='mse',optimizer=Adam(learning_rate=learningRate))
+        model.compile(loss=Huber(),optimizer=Adam(learning_rate=learningRate))
         return model

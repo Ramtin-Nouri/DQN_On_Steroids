@@ -2,12 +2,11 @@ from threading import Thread
 from nets import QNetwork
 import gym,random,numpy as np, sys,time,datetime,os
 from collections import deque
-from tqdm import tqdm
 import tensorflow as tf
 from tensorflow.keras.models import load_model,Model
 random.seed(459)
 
-maxQueueSize=50000
+maxQueueSize=65536
 totalSteps = 2000
 totalEpisodes = 100000
 gamma = 0.99
@@ -18,7 +17,9 @@ learningRate = 0.0001
 epsilon = 1.0
 min_epsilon = 0.01
 max_epsilon = 1.0
-decay = 0.001
+decay = 0.0001
+
+targetUpdateRate=1000
 
 class StaticEnvironment():
     """
@@ -121,11 +122,13 @@ class Agent(Thread):
             self.env = StaticEnvironment()
         self.model,_ = net.getModel(self.env.getOutputShape(),[self.env.getActionSpace(),learningRate])
         self.memory = deque(maxlen=maxQueueSize)
+        self.predictedActions = 0
 
     def getAction(self,state):
         exploit= random.uniform(0,1)
         if exploit > epsilon:
             prediction = self.model.predict(np.array([state]))[0]
+            self.predictedActions += 1
             return prediction.argmax()
         else:
             return self.env.getSample()
@@ -137,7 +140,7 @@ class Agent(Thread):
         score = 0
         steps = 0
         state = self.env.reset()
-        for _ in tqdm(range(totalSteps)):
+        for _ in range(totalSteps):
             action = self.getAction(state)
             newState, reward, done = self.env.step(action)
             
@@ -151,10 +154,13 @@ class Agent(Thread):
         return score,steps
     
     def run(self):
+        global shouldRun
         print("Starting Agent")
         highScore = 0
         scoreQue = deque(maxlen=100)
         for episode in range(totalEpisodes):
+            if not shouldRun: return
+            self.predictedActions = 0
             score,steps = self.runEpisode()
             if score > highScore:
                 highScore = score
@@ -163,10 +169,12 @@ class Agent(Thread):
             print("Episode: ",episode, "| Score: " ,score,"| HighScore: ",highScore, "| Epsilon: ", epsilon, "Running Mean: ", np.mean(scoreQue))
             with file_writer.as_default():
                 tf.summary.scalar("Score",score,step=episode)
+                tf.summary.scalar("Predicted Actions",self.predictedActions,step=episode)
                 tf.summary.scalar("Episode Length",steps,step=episode)
                 tf.summary.scalar("Highscore",highScore,step=episode)
                 tf.summary.scalar("Epsilon",epsilon,step=episode)
                 tf.summary.scalar("Running Mean",np.mean(scoreQue),step=episode)
+        shouldRun = False
             
     def copyModel(self,model):
         self.model.set_weights(model.get_weights())
@@ -180,31 +188,29 @@ class Trainer(Thread):
         Thread.__init__(self)
         self.model,self.epoch = net.getModel(agent.env.getOutputShape(),[agent.env.getActionSpace(),learningRate])
         self.agent = agent
+        self.agent.copyModel(self.model)
 
     def run(self):
         print("Starting Trainer")
-        while True:
+        while shouldRun:
             minibatch = self.agent.getMemorySample()
-            targets = []
             w,h,c = agent.env.getOutputShape()
             states = np.concatenate(minibatch[:,0]).reshape(batchSize,w,h,c)
             newStates = np.concatenate(minibatch[:,3]).reshape(batchSize,w,h,c)
-            qValues = self.model.predict(newStates,batch_size=batchSize )
-            allTargets = self.model.predict(states,batch_size=batchSize )
-            for i, (_, action, reward, _, done) in enumerate(minibatch):
-                if done:
-                    target = reward
-                else:
-                    target = reward + gamma * np.amax(qValues[i])
-                allTargets[i][action]=target
-                targets.append(allTargets[i])
 
-            loss = self.model.train_on_batch(np.array(states),np.array(targets))
+            targetQValues = self.model.predict(states,batch_size=batchSize )
+            nextQValues = self.model.predict(newStates,batch_size=batchSize )
+            maxNextQ = np.amax(nextQValues,axis=1)
+            for i, (_, action, reward, _, done) in enumerate(minibatch):
+                targetQValues[i][action]=reward if done else reward + gamma * maxNextQ[i]
+
+            loss = self.model.train_on_batch(np.array(states),targetQValues)
             with file_writer.as_default():
                 tf.summary.scalar("Loss",loss,step=self.epoch)
             #print(F"Epoch {self.epoch} ; Loss: {loss}")
             self.epoch +=1
-            if self.epoch % 100==0:
+            if self.epoch % targetUpdateRate==0:
+                print("Copy Model")
                 agent.copyModel(self.model)
 
 
@@ -218,11 +224,17 @@ file_writer = tf.summary.create_file_writer(folderName)
 net = QNetwork.NeuralNetwork()
 agent = Agent()
 trainer = Trainer(agent)
-agent.copyModel(trainer.model)
 
 with open('%s/architecture.txt'%(folderName),'w') as fh:
     trainer.model.summary(print_fn=lambda x: fh.write(x + '\n'))
 
+shouldRun = True
 agent.start()
 while len(agent.memory) < batchSize:time.sleep(1)
 trainer.start()
+
+try:
+    agent.join()
+    trainer.join()
+except KeyboardInterrupt:
+    shouldRun = False
