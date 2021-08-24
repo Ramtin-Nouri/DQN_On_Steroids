@@ -17,7 +17,7 @@ class NeuralNetwork(template.nnBase.NNBase):
             Instead of outputShape as intended ,use second parameter for list of arguments
         """        
 
-        [outputShape,learningRate,lrdecay] = args
+        [outputShape,learningRate] = args
 
         input_ = Input(inputShape)
         x = Conv2D(8,(3,3),strides=(2,2), activation="relu")(input_)
@@ -27,5 +27,5 @@ class NeuralNetwork(template.nnBase.NNBase):
 
         model = Model(inputs=input_,outputs=x)
         
-        model.compile(loss='mse',optimizer=Adam(learning_rate=learningRate, decay = lrdecay))
+        model.compile(loss='mse',optimizer=Adam(learning_rate=learningRate))
         return model

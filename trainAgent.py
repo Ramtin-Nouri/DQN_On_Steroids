@@ -11,10 +11,9 @@ maxQueueSize=50000
 totalSteps = 2000
 totalEpisodes = 100000
 gamma = 0.99
-batchSize = 2048
+batchSize = 256
 
 learningRate = 0.0001
-lrdecay = 0.99
 
 epsilon = 1.0
 min_epsilon = 0.01
@@ -120,7 +119,7 @@ class Agent(Thread):
         else:
             print("Use Static Environment")
             self.env = StaticEnvironment()
-        self.model,_ = net.getModel(self.env.getOutputShape(),[self.env.getActionSpace(),learningRate,lrdecay])
+        self.model,_ = net.getModel(self.env.getOutputShape(),[self.env.getActionSpace(),learningRate])
         self.memory = deque(maxlen=maxQueueSize)
 
     def getAction(self,state):
@@ -179,7 +178,7 @@ class Trainer(Thread):
     """
     def __init__(self,agent):
         Thread.__init__(self)
-        self.model,self.epoch = net.getModel(agent.env.getOutputShape(),[agent.env.getActionSpace(),learningRate,lrdecay])
+        self.model,self.epoch = net.getModel(agent.env.getOutputShape(),[agent.env.getActionSpace(),learningRate])
         self.agent = agent
 
     def run(self):
