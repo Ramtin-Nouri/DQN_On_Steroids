@@ -9,7 +9,7 @@ class NeuralNetwork(template.nnBase.NNBase):
     
     def __init__(self):
         #Only sets the name of this class
-        self.networkName = "Autoencoder"
+        self.networkName = "Agent"
             
     def makeModel(self,inputShape,args):
         """

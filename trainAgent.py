@@ -6,15 +6,14 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model,Model
 random.seed(459)
 
-maxQueueSize=65536
-totalSteps = 2000
+maxQueueSize=25000
+maxSteps = 2000
 totalEpisodes = 100000
 gamma = 0.99
 batchSize = 256
 
 learningRate = 0.0001
 
-epsilon = 1.0
 min_epsilon = 0.01
 max_epsilon = 1.0
 decay = 0.0001
@@ -67,7 +66,7 @@ class DynamicEnvironment():
         And other useful functions
     """
     def __init__(self):
-        self.gym_env=gym.make("Breakout-v4")
+        self.gym_env=gym.make("BreakoutNoFrameskip-v4")
         self.gym_env.seed(459)
         self.previousObservations = deque(maxlen=4)
 
@@ -98,7 +97,6 @@ class DynamicEnvironment():
         stacked= np.stack(self.previousObservations,axis=-1).reshape(1,208,160,12)
         return self.model.predict(stacked)[0]
 
-
     def step(self,action):
         obs, reward, done, _ = self.gym_env.step(action)
         obs = np.array([obs[2:]])
@@ -123,10 +121,11 @@ class Agent(Thread):
         self.model,_ = net.getModel(self.env.getOutputShape(),[self.env.getActionSpace(),learningRate])
         self.memory = deque(maxlen=maxQueueSize)
         self.predictedActions = 0
+        self.epsilon = max_epsilon
 
     def getAction(self,state):
         exploit= random.uniform(0,1)
-        if exploit > epsilon:
+        if exploit > self.epsilon:
             prediction = self.model.predict(np.array([state]))[0]
             self.predictedActions += 1
             return prediction.argmax()
@@ -140,7 +139,7 @@ class Agent(Thread):
         score = 0
         steps = 0
         state = self.env.reset()
-        for _ in range(totalSteps):
+        for _ in range(maxSteps):
             action = self.getAction(state)
             newState, reward, done = self.env.step(action)
             
@@ -158,21 +157,24 @@ class Agent(Thread):
         print("Starting Agent")
         highScore = 0
         scoreQue = deque(maxlen=100)
+        totalSteps = 0
         for episode in range(totalEpisodes):
             if not shouldRun: return
             self.predictedActions = 0
             score,steps = self.runEpisode()
+            totalSteps += steps
             if score > highScore:
                 highScore = score
-            epsilon = min_epsilon + (max_epsilon - min_epsilon)*np.exp(-decay*episode)
+            self.epsilon = min_epsilon + (max_epsilon - min_epsilon)*np.exp(-decay*episode)
             scoreQue.append(score)
-            print("Episode: ",episode, "| Score: " ,score,"| HighScore: ",highScore, "| Epsilon: ", epsilon, "Running Mean: ", np.mean(scoreQue))
+            print("Episode: ",episode, "| Score: " ,score,"| HighScore: ",highScore, "| Epsilon: ", self.epsilon, "Running Mean: ", np.mean(scoreQue))
             with file_writer.as_default():
                 tf.summary.scalar("Score",score,step=episode)
                 tf.summary.scalar("Predicted Actions",self.predictedActions,step=episode)
                 tf.summary.scalar("Episode Length",steps,step=episode)
+                tf.summary.scalar("Steps",totalSteps,step=episode)
                 tf.summary.scalar("Highscore",highScore,step=episode)
-                tf.summary.scalar("Epsilon",epsilon,step=episode)
+                tf.summary.scalar("Epsilon",self.epsilon,step=episode)
                 tf.summary.scalar("Running Mean",np.mean(scoreQue),step=episode)
         shouldRun = False
             

@@ -9,7 +9,7 @@ batchsize = 4
 net = StateNetwork.NeuralNetwork()
 model,epoch = net.getModel((208,160,3),(208,160,3)) #original size is 210 but that's not divisible by 8
 
-dataGen = datamanager.DataGeneratorState("Breakout-v4",batchsize,debugMode=False)
+dataGen = datamanager.DataGeneratorState("BreakoutNoFrameskip-v4",batchsize,debugMode=False)
 valData = datamanager.ValidationDataState("data/test")
 
 
