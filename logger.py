@@ -43,6 +43,14 @@ class MultiInputLogger(template.Logger):
 
         predict the images and draw side-by-side the
         target and prediction
+
+        Arguments:
+        ----------
+        fileWriter: Tensorboard filewriter
+        epoch: int
+            current epoch
+        name: str
+            name of file to be saved
         """
         global sequenceLength
         both = [None]*2*self.sequenceLength
