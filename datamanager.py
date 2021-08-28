@@ -145,8 +145,9 @@ class DataGeneratorDynamics(DataGenerator):
         number of frames to use as input of net
     """
 
-    def __init__(self, envname, batchsize, actionShape, queueSize=500, debugMode=False, nFramesIn=4):
-        """super call + set its fields."""
+    def __init__(self, envname, batchsize, actionShape, queueSize=500,
+                 debugMode=False, nFramesIn=4):
+        """Super call + set its fields."""
         super().__init__(envname, batchsize, queueSize, debugMode)
         self.actionShape = actionShape
         self.stackedObservationLength = nFramesIn
@@ -183,7 +184,8 @@ class DataGeneratorDynamics(DataGenerator):
                 # Throw away some, so that we get more different data
                 for _ in range(20):
                     self.data.get()
-            yield ([np.array(batchIn1), np.array(batchIn2)], np.array(batchOut))
+            yield ([np.array(batchIn1), np.array(batchIn2)],
+                   np.array(batchOut))
 
 
 class DataGeneratorState(DataGenerator):
@@ -206,7 +208,6 @@ class DataGeneratorState(DataGenerator):
             output: current observation
             (Yes it's the same it shall be used in an autoencoder fashion)
         """
-
         while True:
             batchIn = []
             batchOut = []
@@ -302,19 +303,21 @@ class ValidationDataDynamics():
 
 class ValidationDataState():
     """Validation data loader for single frame input model.
-    
+
     Attributes:
     x: list
         inputs
     y: list
         same as x
     steps:
-        number of images"""
+        number of images
+    """
 
     def __init__(self, validationFolder):
         """Load all images from validation folder.
 
-        Append to x and y"""
+        Append to x and y
+        """
         self.y = []
 
         imgpaths = os.listdir(validationFolder)
