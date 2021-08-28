@@ -105,46 +105,18 @@ class StaticEnvironment():
         return self.model.predict(obs)[0], reward, done
 
 
-class DynamicEnvironment():
+class DynamicEnvironment(StaticEnvironment):
     """
-    Custom Wrapper around OpenAi Gym Environment.
+    Custom Wrapper around OpenAi Gym Environment using multiple input frames.
 
-    It runs observations through an encoder model first.
     Each output is based on 4 observations.
     Other than that identical to StaticEnvironment
-    And other useful functions.
     """
 
     def __init__(self):
         """Create Environment and load encoder."""
-        self.gym_env = gym.make("BreakoutNoFrameskip-v4")
-        self.gym_env.seed(459)
+        super().__init__()
         self.previousObservations = deque(maxlen=4)
-
-        # Get Autoencoder Model:
-        try:
-            autoencoder = load_model(sys.argv[1], compile=False)
-        except IndexError:
-            print("ERROR:\
-                 Please specify Path to encoder model as first parameter")
-            quit()
-        # Extract Encoder part from autoencoder:
-        layer_name = 'encoding'
-        self.model = Model(
-            inputs=autoencoder.layers[0].input,
-            outputs=autoencoder.get_layer(layer_name).output)
-
-    def getOutputShape(self):
-        """Return number of actions."""
-        return self.model.output_shape[1:]
-
-    def getActionSpace(self):
-        """Return number of actions."""
-        return self.gym_env.action_space.n
-
-    def getSample(self):
-        """Return a randomly sampled action."""
-        return self.gym_env.action_space.sample()
 
     def reset(self):
         """Reset environment and return (encoded) observation.
