@@ -2,10 +2,10 @@
 
 Intended for use with trainAgent.
 
-Trains a model to output the the input.
+Trains a model to output the input.
 
 Uses OpenAiGym's BreakoutNoFrameskip-v4 for data.
-Training data is sampled from the environment continiusly,
+Training data is sampled from the environment continiously,
 but validation data is prerecorded.
 
 Tensorboard is used to log loss, etc. and also example predictions.
